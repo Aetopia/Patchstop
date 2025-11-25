@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net481</TargetFramework>
 
+    <UseWindowsForms>true</UseWindowsForms>
     <Optimize>true</Optimize>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
@@ -11,6 +12,16 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <AssemblyTitle>Patchstop</AssemblyTitle>
+    <Product>Patchstop</Product>
+    <Company>Aetopia</Company>
+    <Copyright>Copyright (C) 2025 Aetopia</Copyright>
+
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
 
   <ItemGroup>

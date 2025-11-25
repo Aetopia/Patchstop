@@ -1,50 +1,50 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Store.Preview.InstallControl;
 
 static class Program
 {
+    static Program() => AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+    {
+        MessageBox.Show($"{args.ExceptionObject}".Trim(), "Patchstop", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        Environment.Exit(1);
+    };
+
     static void Main()
     {
-        AppInstallManager appInstallManager = new();
-
-        switch (appInstallManager.AutoUpdateSetting)
+        NotifyIcon icon = new()
         {
-            case AutoUpdateSetting.Disabled:
-                Console.WriteLine($"[{DateTime.Now}] Automatic updates are disabled.");
-                break;
+            Visible = true,
+            Text = "Patchstop",
+            ContextMenu = new(),
+            Icon = SystemIcons.Error
+        };
 
-            case AutoUpdateSetting.Enabled:
-                Console.WriteLine($"[{DateTime.Now}] Automatic updates were enabled, is now disabled");
-                appInstallManager.AutoUpdateSetting = AutoUpdateSetting.Disabled;
-                break;
+        AppInstallManager manager = new()
+        {
+            AutoUpdateSetting = AutoUpdateSetting.Disabled
+        };
 
-            case AutoUpdateSetting.DisabledByPolicy:
-                Console.WriteLine($"[{DateTime.Now}] Automatic updates are forced disabled via GPO.");
-                break;
+        icon.ContextMenu.MenuItems.Add("Exit", (_, _) =>
+        {
+            icon.Dispose();
+            Environment.Exit(0);
+        });
 
-            case AutoUpdateSetting.EnabledByPolicy:
-                Console.WriteLine($"[{DateTime.Now}] Automatic updates are forced enabled via GPO, please disable it.");
-                break;
+        foreach (var item in manager.AppInstallItems)
+        {
+            if (item.InstallType != AppInstallType.Update) continue;
+            try { item.Cancel(); } catch { }
         }
 
-        foreach (var appInstallItem in appInstallManager.AppInstallItems.Concat(appInstallManager.AppInstallItemsWithGroupSupport))
+        manager.ItemStatusChanged += (sender, args) =>
         {
-            if (appInstallItem.InstallType is not AppInstallType.Update) continue;
-            Console.WriteLine($"[{DateTime.Now}] Cancelling update for \"{appInstallItem.PackageFamilyName}\"...");
-            try { appInstallItem.Cancel(); } catch { }
-        }
-
-        appInstallManager.ItemStatusChanged += (sender, args) =>
-        {
-            if (args.Item.InstallType is not AppInstallType.Update) return;
-            Console.WriteLine($"[{DateTime.Now}] Cancelling update for \"{args.Item.PackageFamilyName}\"...");
+            if (args.Item.InstallType != AppInstallType.Update) return;
             try { args.Item.Cancel(); } catch { }
         };
 
-
-        Console.WriteLine($"[{DateTime.Now}] Monitoring for any updates & cancelling them...");
-        Thread.Sleep(Timeout.Infinite);
+        Application.Run();
     }
 }
